@@ -13,9 +13,27 @@
 [![Runtime](https://img.shields.io/badge/Runtime-Google%20Cloud%20Run-34A853?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/run)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)](LICENSE)
 
-[Live Interactive Dashboard](http://localhost:8080) • [Master Verification Audit](#-master-qa-production-verification--audit-results) • [Architecture](#-system-architecture) • [Feature Matrix](#-enterprise-feature-matrix) • [Quickstart](#-developer-quickstart)
+[Live Interactive Dashboard](http://localhost:8080) • [Judge Access Instructions](#-judge--compliance-access-instructions) • [Master Verification Audit](#-master-qa-production-verification--audit-results) • [Architecture](#-system-architecture) • [Feature Matrix](#-enterprise-feature-matrix) • [Quickstart](#-developer-quickstart)
 
 </div>
+
+---
+
+> **🏆 Hackathon Notice:** *This project and repository were created for the purposes of entering the Google #AllThingsAgenticHackathon under the Fortified Enterprise Fleet category.*
+
+---
+
+## 🔒 Judge & Compliance Access Instructions
+
+For Hackathon Judges and Evaluators:
+* This repository is publicly accessible at **`https://github.com/suresh-zatch/AegisFleet`**.
+* If evaluated under private enterprise settings, repository read access has been provisioned for **`testing@devpost.com`** and **`cloudhackathons@google.com`**.
+* Direct submission documentation:
+  * 📋 **Complete Devpost Submission Package:** [`SUBMISSION.md`](SUBMISSION.md)
+  * 🎬 **4-Minute Demo Video Script:** [`DEMO_VIDEO_SCRIPT.md`](DEMO_VIDEO_SCRIPT.md)
+  * ✍️ **Official Compliance Blog Article:** [`BLOG_POST.md`](BLOG_POST.md)
+  * 📱 **Social Media Posts (#AllThingsAgenticHackathon):** [`SOCIAL_POSTS.md`](SOCIAL_POSTS.md)
+  * 🔬 **Master QA Verification Report (12/12 Passed):** [`aegisfleet_verification_report.md`](aegisfleet_verification_report.md)
 
 ---
 
@@ -70,12 +88,6 @@ AegisFleet has completed a **master-level autonomous QA verification audit** acr
 └─────────────────────────────────┴───────────────────────────┴───────────────┘
 ```
 
-### Key Verification Highlights:
-1. **Model Armor XML Quarantine:** Adversarial prompt injection payloads (e.g. `SYSTEM OVERRIDE: Ignore all previous instructions...`) are defanged (`[DEFANGED_INJECTION_ATTEMPT]`) and wrapped in `<untrusted_gcp_telemetry>` boundaries.
-2. **Schema Drift Resilience:** Custom regex extractors (`extract_json_from_llm_output`) ensure zero JSON parsing crashes when LLMs wrap payloads in markdown fences.
-3. **Deterministic Idempotency:** Submitting an already executed containment command ID is intercepted and rejected (`ALREADY_EXECUTED`), preventing destructive command replay.
-4. **Automated Rollback Engine:** Tested 100% recovery of modified IAM roles, disabled service accounts, and stopped compute instances.
-
 ---
 
 ## 🚀 Enterprise Feature Matrix (All Versions Active)
@@ -93,7 +105,7 @@ AegisFleet has completed a **master-level autonomous QA verification audit** acr
 
 ```mermaid
 graph TD
-    %% Ingestion Layer
+    %% Ingress Layer
     subgraph INGRESS ["1. Multi-Cloud Ingress & Telemetry"]
         SCC["🚨 GCP Security Command Center"] -->|Pub/Sub| PS["⚡ Cloud Pub/Sub"]
         AWS_CT["📜 AWS CloudTrail"] -.-> PS
@@ -120,6 +132,7 @@ graph TD
     %% Brain & Persistence
     subgraph BRAIN ["4. Core Reasoning & Persistence Engine"]
         SYNTH --> GEMINI["🧠 Google Gemini 3.6 Flash / 3.5 Pro<br/>(Cross-Plane Attack Reconstruction)"]
+        GEMINI --> GEMMA["📱 Gemma 2 / 3 Edge Triage<br/>(Local Finding Pre-Filtering)"]
         GEMINI --> REPORT["📄 IncidentReport Dossier"]
         REPORT <--> FS[("💾 Cloud Firestore<br/>(Persistent Memory Bank)")]
     end
