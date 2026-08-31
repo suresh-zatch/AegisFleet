@@ -1,7 +1,7 @@
-"""AegisFleet Pydantic V2 data models for GCP SOC operations.
+"""AegisFleet Pydantic V2 data models for Enterprise Multi-Cloud SOC operations.
 
-Provides type-safe models for findings, audit telemetry, asset topology,
-containment actions, and structured incident outputs with LLM JSON extraction fallbacks.
+Covers v1.0 (Core GCP), v1.1 (Slack/Teams HITL), v2.0 (Multi-Cloud Fabric: AWS & Azure),
+and v2.1 (Automated Post-Containment Rollback Engine).
 """
 
 from __future__ import annotations
@@ -14,6 +14,13 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from pydantic import BaseModel, Field, field_validator
+
+
+class CloudProvider(str, Enum):
+    GCP = "GCP"
+    AWS = "AWS"
+    AZURE = "AZURE"
+    MULTI_CLOUD = "MULTI_CLOUD"
 
 
 class ThreatSeverity(str, Enum):
@@ -29,26 +36,36 @@ class ContainmentStatus(str, Enum):
     APPROVED = "APPROVED"
     EXECUTED = "EXECUTED"
     REJECTED = "REJECTED"
+    ROLLED_BACK = "ROLLED_BACK"
     FAILED = "FAILED"
 
 
 class ActionType(str, Enum):
+    # GCP actions
     DISABLE_SA_KEY = "DISABLE_SERVICE_ACCOUNT_KEY"
     REVOKE_IAM = "REVOKE_IAM_BINDING"
     LOCK_BUCKET = "LOCK_STORAGE_BUCKET"
     DISABLE_SA = "DISABLE_SERVICE_ACCOUNT"
     BLOCK_IP = "BLOCK_IP_ADDRESS"
     ISOLATE_VM = "ISOLATE_VM_INSTANCE"
+    # AWS actions
+    AWS_DETACH_POLICY = "AWS_DETACH_USER_POLICY"
+    AWS_DEACTIVATE_KEY = "AWS_DEACTIVATE_ACCESS_KEY"
+    AWS_ISOLATE_EC2 = "AWS_ISOLATE_EC2_SECURITY_GROUP"
+    # Azure actions
+    AZURE_REVOKE_SESSIONS = "AZURE_REVOKE_USER_SESSIONS"
+    AZURE_LOCK_NSG = "AZURE_LOCK_NETWORK_SECURITY_GROUP"
 
 
 class SCCFinding(BaseModel):
-    """Google Cloud Security Command Center finding payload."""
+    """Google Cloud Security Command Center or Multi-Cloud finding payload."""
 
     finding_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    provider: CloudProvider = CloudProvider.GCP
     category: str = Field(
         ..., description="Finding category, e.g. 'Persistence: New Service Account Key'"
     )
-    resource_name: str = Field(..., description="Full GCP resource path")
+    resource_name: str = Field(..., description="Full Cloud resource identifier")
     severity: ThreatSeverity = ThreatSeverity.HIGH
     event_time: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -79,21 +96,6 @@ class AuditLogQueryInput(BaseModel):
     max_results: int = Field(default=50, ge=1, le=200)
 
 
-class AuditLogRecord(BaseModel):
-    """A single Cloud Audit Log entry."""
-
-    timestamp: str
-    principal_email: str
-    service_name: str
-    method_name: str
-    resource_name: str
-    status_code: int = 0
-    status_message: str = "OK"
-    request_metadata: Dict[str, Any] = Field(default_factory=dict)
-    caller_ip: str = ""
-    user_agent: str = ""
-
-
 class IAMPolicyCheckInput(BaseModel):
     """Input parameters for checking IAM policies."""
 
@@ -101,27 +103,6 @@ class IAMPolicyCheckInput(BaseModel):
     principal_email: Optional[str] = None
     role: Optional[str] = None
     resource_name: Optional[str] = None
-
-
-class IAMBinding(BaseModel):
-    """An IAM policy binding."""
-
-    role: str
-    members: List[str] = Field(default_factory=list)
-    condition: Optional[str] = None
-    is_dangerous: bool = False
-    risk_reason: str = ""
-
-
-class ServiceAccountKey(BaseModel):
-    """A service account key record."""
-
-    key_id: str
-    service_account_email: str
-    created_time: str
-    expires_time: Optional[str] = None
-    key_type: str = "USER_MANAGED"
-    is_compromised: bool = False
 
 
 class AssetQueryInput(BaseModel):
@@ -132,25 +113,12 @@ class AssetQueryInput(BaseModel):
     resource_name: Optional[str] = None
 
 
-class GCPAsset(BaseModel):
-    """A GCP Cloud Asset representation."""
-
-    asset_name: str
-    asset_type: str
-    project_id: str
-    location: str = ""
-    iam_bindings: List[IAMBinding] = Field(default_factory=list)
-    network_config: Dict[str, Any] = Field(default_factory=dict)
-    labels: Dict[str, str] = Field(default_factory=dict)
-    create_time: str = ""
-    update_time: str = ""
-
-
 class StagedContainmentCommand(BaseModel):
-    """A staged gcloud containment command awaiting HITL authorization."""
+    """A staged containment command awaiting HITL authorization."""
 
     command_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
-    command: str = Field(..., description="The gcloud CLI command")
+    provider: CloudProvider = CloudProvider.GCP
+    command: str = Field(..., description="The CLI command (gcloud, aws, or az)")
     action_type: ActionType
     target_resource: str
     risk_level: ThreatSeverity = ThreatSeverity.HIGH
@@ -158,12 +126,19 @@ class StagedContainmentCommand(BaseModel):
     description: str = ""
     executed_at: Optional[str] = None
     executed_by: Optional[str] = None
+    rollback_command: Optional[str] = Field(
+        default=None, description="Pre-computed command to reverse this containment action"
+    )
+    pre_containment_state: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="State snapshot captured prior to mutation"
+    )
 
 
 class AttackPathNode(BaseModel):
     """A node in the attack path graph."""
 
     step_number: int
+    provider: CloudProvider = CloudProvider.GCP
     action: str
     actor: str
     target: str
@@ -172,12 +147,54 @@ class AttackPathNode(BaseModel):
     evidence: str = ""
 
 
+# ============================================================================
+# v2.1: Post-Containment Rollback Models
+# ============================================================================
+
+class RollbackAction(BaseModel):
+    """A single rollback execution step."""
+
+    action_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
+    command_id: str
+    rollback_command: str
+    target_resource: str
+    status: str = "PENDING"  # PENDING, SUCCESS, FAILED
+    executed_at: Optional[str] = None
+    message: str = ""
+
+
+class RollbackRequest(BaseModel):
+    """Request to rollback containment actions for an incident."""
+
+    incident_id: str
+    command_ids: Optional[List[str]] = Field(
+        default=None, description="Specific command IDs to revert. If empty, reverts all executed commands."
+    )
+    reason: str = Field(default="False-positive resolution / analyst rollback request")
+    authorization_token: Optional[str] = None
+
+
+class RollbackResponse(BaseModel):
+    """Response returned upon rollback completion."""
+
+    incident_id: str
+    status: str  # COMPLETED, PARTIAL, FAILED
+    rolled_back_commands: List[str] = Field(default_factory=list)
+    results: List[RollbackAction] = Field(default_factory=list)
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# ============================================================================
+# Incident Report Model (v1.0 - v2.1 Comprehensive)
+# ============================================================================
+
 class IncidentReport(BaseModel):
-    """Complete structured output for a SOC incident investigation."""
+    """Complete structured output for an Enterprise SOC incident investigation."""
 
     incident_id: str = Field(
         default_factory=lambda: f"INC-{uuid.uuid4().hex[:8].upper()}"
     )
+    provider: CloudProvider = CloudProvider.GCP
     threat_severity: ThreatSeverity
     title: str
     summary: str
@@ -197,6 +214,11 @@ class IncidentReport(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
     swarm_trace: List[str] = Field(default_factory=list)
+    # v1.1 Slack/Teams metadata
+    slack_channel_id: Optional[str] = None
+    slack_ts: Optional[str] = None
+    # v2.1 Rollback history
+    rollback_history: List[RollbackResponse] = Field(default_factory=list)
 
 
 class HITLApprovalRequest(BaseModel):
@@ -217,28 +239,14 @@ class HITLApprovalResponse(BaseModel):
     status: str = "COMPLETED"
 
 
-class SwarmStatus(BaseModel):
-    """Status of the agent swarm execution."""
-
-    incident_id: str
-    phase: str
-    active_agents: List[str] = Field(default_factory=list)
-    completed_agents: List[str] = Field(default_factory=list)
-    progress_pct: float = 0.0
-    messages: List[str] = Field(default_factory=list)
-
+# ============================================================================
+# LLM JSON Extractor Utility
+# ============================================================================
 
 def extract_json_from_llm_output(raw_text: str) -> Dict[str, Any]:
-    """Extract and parse a JSON dictionary from LLM text containing markdown fences or commentary.
-
-    Handles:
-    - Clean JSON: '{"key": "value"}'
-    - Markdown wrapped: '```json\n{"key": "value"}\n```'
-    - Conversational preamble: 'Here is the report:\n{"key": "value"}'
-    """
+    """Extract and parse a JSON dictionary from LLM text containing markdown fences or commentary."""
     text = raw_text.strip()
 
-    # 1. Direct parse attempt
     try:
         data = json.loads(text)
         if isinstance(data, dict):
@@ -246,7 +254,6 @@ def extract_json_from_llm_output(raw_text: str) -> Dict[str, Any]:
     except Exception:
         pass
 
-    # 2. Markdown fence extraction
     fence_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, re.IGNORECASE)
     if fence_match:
         try:
@@ -256,7 +263,6 @@ def extract_json_from_llm_output(raw_text: str) -> Dict[str, Any]:
         except Exception:
             pass
 
-    # 3. Outermost brace search
     first_brace = text.find("{")
     last_brace = text.rfind("}")
     if first_brace != -1 and last_brace != -1 and last_brace > first_brace:

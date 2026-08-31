@@ -3,10 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AegisFleet SOC Command Center</title>
+    <title>AegisFleet Enterprise Multi-Cloud SOC Command Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: '#111827',
+                primaryColor: '#1e293b',
+                primaryTextColor: '#e2e8f0',
+                primaryBorderColor: '#3b82f6',
+                lineColor: '#60a5fa',
+                secondaryColor: '#1f2937',
+                tertiaryColor: '#0f172a'
+            }
+        });
+        window.mermaid = mermaid;
+    </script>
     <style>
         :root {
             --bg-color: #0a0e17;
@@ -17,6 +35,7 @@
             --accent-amber: #f59e0b;
             --accent-blue: #3b82f6;
             --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
             --text-primary: #e2e8f0;
             --text-secondary: #94a3b8;
             --font-sans: 'Inter', system-ui, sans-serif;
@@ -39,16 +58,14 @@
             overflow: hidden;
         }
 
-        /* Layout */
         .app-container {
             display: grid;
-            grid-template-columns: 280px 1fr;
+            grid-template-columns: 300px 1fr;
             grid-template-rows: 60px 1fr 40px;
             height: 100vh;
             width: 100vw;
         }
 
-        /* Header */
         header {
             grid-column: 1 / -1;
             background-color: var(--surface-color);
@@ -87,150 +104,128 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
 
         .tech-badge {
             font-size: 0.7rem;
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(139, 92, 246, 0.15);
             color: var(--accent-purple);
             padding: 4px 10px;
             border-radius: 12px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
+            border: 1px solid rgba(139, 92, 246, 0.4);
             font-weight: 600;
-            color: var(--accent-green);
         }
 
-        .pulse-dot {
-            width: 10px;
-            height: 10px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
             background-color: var(--accent-green);
             border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-green);
             animation: pulse 2s infinite;
         }
 
-        .clock {
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
 
         /* Sidebar */
         aside {
             background-color: var(--surface-color);
             border-right: 1px solid var(--surface-border);
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .sidebar-section {
+            gap: 20px;
             padding: 20px;
-            border-bottom: 1px solid var(--surface-border);
         }
 
-        .sidebar-title {
+        .section-title {
             font-size: 0.75rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 15px;
-            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .scenario-btn {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            background: transparent;
+            background-color: rgba(30, 41, 59, 0.5);
             border: 1px solid var(--surface-border);
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 12px;
-            margin-bottom: 10px;
             color: var(--text-primary);
             text-align: left;
             cursor: pointer;
             transition: all 0.2s ease;
-        }
-
-        .scenario-btn .title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .scenario-btn .desc {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+            margin-bottom: 8px;
         }
 
         .scenario-btn:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.02);
+            border-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
         }
 
-        .scenario-btn.threat-red:hover { border-color: var(--accent-red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-        .scenario-btn.threat-amber:hover { border-color: var(--accent-amber); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
-        .scenario-btn.threat-blue:hover { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-        .scenario-btn.threat-purple:hover { border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
-
-        .incident-card {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--surface-border);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
+        .scenario-btn.multi-cloud:hover {
+            border-color: var(--accent-purple);
+            background-color: rgba(139, 92, 246, 0.1);
         }
 
-        .incident-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .incident-header {
+        .scenario-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .scenario-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
         }
 
         .badge {
             font-size: 0.65rem;
-            font-weight: 700;
             padding: 2px 6px;
             border-radius: 4px;
-            text-transform: uppercase;
+            font-weight: 600;
         }
 
-        .badge.critical { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
-        .badge.high { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
-        .badge.medium { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
-        .badge.low { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge-gcp { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-multi { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+        .badge-azure { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
 
-        .incident-id {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+        .incident-queue {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
         }
 
-        .incident-title {
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 4px;
+        .incident-card {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .incident-time {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+        .incident-card:hover, .incident-card.active {
+            border-color: var(--accent-blue);
+            background-color: rgba(30, 41, 59, 0.8);
         }
 
         /* Main Content */
@@ -238,301 +233,185 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: radial-gradient(circle at center, #111827 0%, #0a0e17 100%);
+            background-color: var(--bg-color);
         }
 
-        .tabs {
+        .tab-nav {
             display: flex;
-            background-color: var(--surface-color);
             border-bottom: 1px solid var(--surface-border);
+            background-color: var(--surface-color);
             padding: 0 20px;
         }
 
         .tab-btn {
-            background: transparent;
+            background: none;
             border: none;
-            color: var(--text-secondary);
             padding: 15px 20px;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.2s;
-            font-family: var(--font-sans);
         }
 
-        .tab-btn:hover {
-            color: var(--text-primary);
-        }
-
+        .tab-btn:hover { color: var(--text-primary); }
         .tab-btn.active {
             color: var(--accent-blue);
             border-bottom-color: var(--accent-blue);
         }
 
         .tab-content {
-            flex: 1;
+            flex-grow: 1;
             overflow-y: auto;
-            padding: 30px;
-            position: relative;
-        }
-
-        .tab-pane {
+            padding: 24px;
             display: none;
-            height: 100%;
         }
 
-        .tab-pane.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
-        }
+        .tab-content.active { display: block; }
 
-        /* Overview Tab */
-        .overview-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .large-badge {
-            font-size: 1.5rem;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 2px;
-        }
-        
-        .large-badge.critical { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); border: 2px solid var(--accent-red); box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); animation: pulse-red 2s infinite; }
-
-        .overview-title h2 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        .overview-title p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .metric-card {
+        /* Panels & Cards */
+        .panel {
             background-color: var(--surface-color);
             border: 1px solid var(--surface-border);
             border-radius: 8px;
             padding: 20px;
-            text-align: center;
-        }
-
-        .metric-val {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent-blue);
-            font-family: var(--font-mono);
-            margin-bottom: 5px;
-        }
-
-        .metric-label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--surface-border);
-            padding-bottom: 8px;
-        }
-
-        .narrative {
-            background-color: rgba(17, 24, 39, 0.7);
-            border-left: 4px solid var(--accent-blue);
-            padding: 20px;
-            border-radius: 4px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .iocs-list {
-            background-color: var(--surface-color);
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            padding: 20px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-
-        .iocs-list ul {
-            list-style: none;
-        }
-
-        .iocs-list li {
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed var(--surface-border);
-            display: flex;
-            gap: 15px;
-        }
-
-        .ioc-type {
-            color: var(--accent-amber);
-            width: 100px;
-        }
-
-        .ioc-val {
-            color: var(--text-primary);
-        }
-
-        /* Graph Tab */
-        .mermaid-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: var(--surface-color);
-            border-radius: 8px;
-            border: 1px solid var(--surface-border);
-            padding: 20px;
-            overflow: auto;
-        }
-
-        /* Briefing Tab */
-        .document {
-            background-color: #ffffff;
-            color: #1f2937;
-            padding: 40px;
-            border-radius: 4px;
-            max-width: 800px;
-            margin: 0 auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            font-family: "Times New Roman", Times, serif;
-            position: relative;
-        }
-
-        .doc-actions {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            background: var(--surface-color);
-            color: var(--text-primary);
-            border: 1px solid var(--surface-border);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: var(--font-sans);
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-        
-        .btn:hover { background: #1f2937; }
-
-        .document h1 { font-size: 2rem; margin-bottom: 20px; border-bottom: 2px solid #1f2937; padding-bottom: 10px; font-family: var(--font-sans); }
-        .document h2 { font-size: 1.4rem; margin: 20px 0 10px 0; font-family: var(--font-sans); }
-        .document p { margin-bottom: 15px; line-height: 1.6; }
-        .document ul { margin-left: 20px; margin-bottom: 15px; }
-        .document li { margin-bottom: 5px; }
-
-        /* Containment Tab */
-        .containment-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
         }
 
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background-color: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--surface-border);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-family: var(--font-mono);
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Containment Table */
         table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--surface-color);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--surface-border);
+            font-size: 0.8rem;
         }
 
         th, td {
-            padding: 15px;
             text-align: left;
+            padding: 10px;
             border-bottom: 1px solid var(--surface-border);
         }
 
-        th {
-            background: rgba(0,0,0,0.2);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-        }
+        th { color: var(--text-secondary); }
+        code { font-family: var(--font-mono); background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px; }
 
-        td.cmd-cell {
+        /* Terminal & Traces */
+        .terminal {
+            background-color: #050811;
+            border: 1px solid var(--surface-border);
+            border-radius: 6px;
+            padding: 15px;
             font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: #a5b4fc;
+            font-size: 0.8rem;
+            height: 450px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
-        .btn-authorize {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--accent-red);
-            border: 1px solid var(--accent-red);
-            padding: 10px 24px;
-            font-size: 1rem;
-            font-weight: 600;
+        .trace-lead { color: #c084fc; }
+        .trace-audit { color: #60a5fa; }
+        .trace-asset { color: #22d3ee; }
+        .trace-iam { color: #f59e0b; }
+        .trace-aws { color: #fb923c; }
+        .trace-azure { color: #38bdf8; }
+
+        /* Slack ChatOps Card View */
+        .slack-card-preview {
+            background-color: #1a1d21;
+            border: 1px solid #2c3136;
+            border-radius: 8px;
+            padding: 18px;
+            font-family: 'Slack-Lato', sans-serif;
+            color: #d1d2d3;
+            max-width: 650px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .slack-btn {
+            background-color: #007a5a;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
             border-radius: 4px;
+            font-weight: 700;
             cursor: pointer;
-            text-transform: uppercase;
-            animation: border-pulse 2s infinite;
+            margin-right: 8px;
+            transition: all 0.2s;
+        }
+        .slack-btn-danger { background-color: #e01e5a; }
+        .slack-btn-primary { background-color: #1264a3; }
+        .slack-btn:hover { filter: brightness(1.15); }
+
+        /* Action Buttons */
+        .btn-action {
+            background-color: var(--accent-red);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.2s;
         }
 
-        .btn-authorize:hover {
-            background: var(--accent-red);
-            color: white;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-        }
+        .btn-action:hover { background-color: #dc2626; box-shadow: 0 0 12px rgba(239, 68, 68, 0.5); }
+        .btn-rollback { background-color: var(--accent-blue); }
+        .btn-rollback:hover { background-color: #2563eb; box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
 
-        /* Swarm Trace Tab */
-        .terminal {
-            background-color: #000;
-            border-radius: 8px;
-            padding: 20px;
-            height: 100%;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            overflow-y: auto;
-            border: 1px solid #333;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        .trace-line {
-            margin-bottom: 6px;
-            line-height: 1.4;
-            opacity: 0;
-            animation: fadeIn 0.2s forwards;
-        }
-
-        .trace-time { color: #666; margin-right: 10px; }
-        .trace-agent.tier1 { color: var(--accent-purple); }
-        .trace-agent.audit { color: var(--accent-blue); }
-        .trace-agent.asset { color: #06b6d4; }
-        .trace-agent.iam { color: var(--accent-amber); }
-        .trace-msg { color: #d4d4d4; }
-
-        /* Footer / Status Bar */
+        /* Footer */
         footer {
+            grid-column: 1 / -1;
             background-color: var(--surface-color);
             border-top: 1px solid var(--surface-border);
             display: flex;
@@ -540,195 +419,52 @@
             align-items: center;
             padding: 0 20px;
             font-size: 0.75rem;
-            z-index: 10;
-        }
-
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .swarm-status {
-            font-family: var(--font-mono);
-            color: var(--accent-blue);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .agent-indicators {
-            display: flex;
-            gap: 10px;
-        }
-
-        .agent-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #333;
-            position: relative;
-        }
-
-        .agent-dot.active { box-shadow: 0 0 8px currentColor; }
-        .agent-dot[data-agent="tier1"].active { background: var(--accent-purple); color: var(--accent-purple); }
-        .agent-dot[data-agent="audit"].active { background: var(--accent-blue); color: var(--accent-blue); }
-        .agent-dot[data-agent="asset"].active { background: #06b6d4; color: #06b6d4; }
-        .agent-dot[data-agent="iam"].active { background: var(--accent-amber); color: var(--accent-amber); }
-
-        .progress-bar-container {
-            width: 200px;
-            height: 6px;
-            background: #333;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: var(--accent-blue);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(10, 14, 23, 0.95);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        .loading-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid transparent;
-            border-top-color: var(--accent-blue);
-            border-right-color: var(--accent-purple);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 30px;
-        }
-
-        .loading-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 15px;
-            letter-spacing: 2px;
-        }
-
-        .loading-text {
-            font-family: var(--font-mono);
-            color: var(--accent-green);
-            font-size: 0.9rem;
-            min-height: 20px;
+            color: var(--text-secondary);
         }
 
         /* Modal */
-        .modal-backdrop {
+        .modal-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.8);
-            z-index: 500;
-            display: flex;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: none;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
+            z-index: 100;
         }
-        .modal-backdrop.active { opacity: 1; pointer-events: all; }
-        
-        .modal {
+
+        .modal-card {
             background: var(--surface-color);
             border: 1px solid var(--surface-border);
             border-radius: 8px;
-            width: 450px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transform: translateY(20px);
-            transition: transform 0.3s;
+            width: 500px;
+            padding: 24px;
         }
-        .modal-backdrop.active .modal { transform: translateY(0); }
-        
-        .modal h3 { color: var(--accent-red); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .modal p { color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5; }
-        .modal input {
-            width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white;
-            font-family: var(--font-mono); margin-bottom: 20px; border-radius: 4px;
-        }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        
-        .btn-confirm { background: var(--accent-red); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600; }
-        .btn-cancel { background: transparent; color: var(--text-secondary); border: 1px solid #555; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
 
-        /* Toasts */
-        .toast-container {
+        /* Loading overlay */
+        .loading-overlay {
             position: fixed;
-            top: 70px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 14, 23, 0.9);
+            display: none;
             flex-direction: column;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            gap: 20px;
         }
 
-        .toast {
-            background: var(--surface-color);
-            border-left: 4px solid;
-            padding: 12px 20px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            color: white;
-            font-size: 0.85rem;
-            animation: slideIn 0.3s forwards;
-            opacity: 0;
-            transform: translateX(100%);
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .toast.success { border-color: var(--accent-green); }
-        .toast.error { border-color: var(--accent-red); }
-        .toast.warning { border-color: var(--accent-amber); }
-        .toast.info { border-color: var(--accent-blue); }
-
-        /* Animations */
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        @keyframes border-pulse {
-            0% { border-color: rgba(239, 68, 68, 1); }
-            50% { border-color: rgba(239, 68, 68, 0.3); }
-            100% { border-color: rgba(239, 68, 68, 1); }
-        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
-        
-        /* Hide UI until data loaded */
-        #main-ui { display: none; }
-        
-        /* Checkbox styling */
-        input[type="checkbox"] { accent-color: var(--accent-blue); width: 16px; height: 16px; }
-        
     </style>
 </head>
 <body>
@@ -738,164 +474,247 @@
     <header>
         <div class="header-left">
             <div class="logo">⚡ AegisFleet SOC</div>
-            <div class="subtitle">Autonomous Tier 1 Response</div>
+            <div class="subtitle">Enterprise Multi-Cloud Autonomous Tier 1 Responder</div>
         </div>
         <div class="header-right">
-            <div class="tech-badge">Powered by Gemini 3.5 & Antigravity SDK</div>
-            <div class="status-indicator">
-                <div class="pulse-dot"></div>
-                OPERATIONAL
+            <span class="tech-badge">v2.1 Enterprise</span>
+            <span class="tech-badge">Gemini 3.5 Pro</span>
+            <span class="tech-badge">Antigravity SDK</span>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem;">
+                <span class="status-dot"></span>
+                <span>SYSTEM ACTIVE</span>
             </div>
-            <div class="clock" id="utc-clock">00:00:00 UTC</div>
         </div>
     </header>
 
     <!-- Sidebar -->
     <aside>
-        <div class="sidebar-section">
-            <div class="sidebar-title">🎯 Threat Simulations</div>
-            
-            <button class="scenario-btn threat-red" onclick="triggerSimulation('compromised_key')">
-                <div class="title">🔑 Compromised SA Key</div>
-                <div class="desc">Service account key leaked to public repo</div>
+        <div>
+            <div class="section-title">
+                <span>🎯 Threat Simulations</span>
+            </div>
+            <button class="scenario-btn" onclick="runScenario('compromised_key')">
+                <div class="scenario-header">
+                    <span>🔑 Leaked SA Key</span>
+                    <span class="badge badge-gcp">GCP</span>
+                </div>
+                <div class="scenario-desc">GitHub secret leak & 4.2GB PII exfiltration</div>
             </button>
-            
-            <button class="scenario-btn threat-amber" onclick="triggerSimulation('privilege_escalation')">
-                <div class="title">⬆️ Privilege Escalation</div>
-                <div class="desc">Unauthorized IAM policy modification</div>
+            <button class="scenario-btn multi-cloud" onclick="runScenario('multi_cloud_lateral_pivot')">
+                <div class="scenario-header">
+                    <span>🌐 AWS ➔ GCP Pivot</span>
+                    <span class="badge badge-multi">v2.0 Cross-Cloud</span>
+                </div>
+                <div class="scenario-desc">AWS IAM compromise traversing via OIDC</div>
             </button>
-            
-            <button class="scenario-btn threat-blue" onclick="triggerSimulation('data_exfiltration')">
-                <div class="title">📤 Data Exfiltration</div>
-                <div class="desc">Anomalous Cloud Storage access pattern</div>
+            <button class="scenario-btn" onclick="runScenario('privilege_escalation')">
+                <div class="scenario-header">
+                    <span>⬆️ IAM Escalation</span>
+                    <span class="badge badge-gcp">GCP</span>
+                </div>
+                <div class="scenario-desc">Owner role modification & 53 VM provision</div>
             </button>
-            
-            <button class="scenario-btn threat-purple" onclick="triggerSimulation('crypto_miner')">
-                <div class="title">⛏️ Crypto Miner</div>
-                <div class="desc">GPU instance with mining activity</div>
+            <button class="scenario-btn" onclick="runScenario('azure_token_abuse')">
+                <div class="scenario-header">
+                    <span>🔷 Azure Entra ID Abuse</span>
+                    <span class="badge badge-azure">v2.0 Azure</span>
+                </div>
+                <div class="scenario-desc">Entra ID token theft & storage key extract</div>
+            </button>
+            <button class="scenario-btn" onclick="runScenario('data_exfiltration')">
+                <div class="scenario-header">
+                    <span>📤 Storage Exfiltration</span>
+                    <span class="badge badge-gcp">GCP</span>
+                </div>
+                <div class="scenario-desc">Burst read against sensitive PII bucket</div>
+            </button>
+            <button class="scenario-btn" onclick="runScenario('crypto_miner')">
+                <div class="scenario-header">
+                    <span>⛏️ Crypto Miner</span>
+                    <span class="badge badge-gcp">GCP</span>
+                </div>
+                <div class="scenario-desc">GPU instance executing xmrig binary</div>
             </button>
         </div>
 
-        <div class="sidebar-section">
-            <div class="sidebar-title">📋 Incident Queue</div>
-            <div id="incident-queue">
-                <!-- Dynamically populated -->
-                <div style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; padding: 20px;">No active incidents</div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column;">
+            <div class="section-title">
+                <span>📁 Incident Queue</span>
+                <span id="queue-count" style="font-family: var(--font-mono);">0</span>
+            </div>
+            <div class="incident-queue" id="incident-list">
+                <!-- Incident cards dynamically populated -->
             </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Workspace -->
     <main>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
-            <button class="tab-btn" onclick="showTab('graph')">🗺️ Attack Graph</button>
-            <button class="tab-btn" onclick="showTab('briefing')">📋 CISO Briefing</button>
-            <button class="tab-btn" onclick="showTab('containment')">🛡️ Containment</button>
-            <button class="tab-btn" onclick="showTab('trace')">🔍 Swarm Trace</button>
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="tab-btn" onclick="switchTab('attack-graph')">🗺️ Attack Graph</button>
+            <button class="tab-btn" onclick="switchTab('containment')">🛡️ Containment (HITL)</button>
+            <button class="tab-btn" onclick="switchTab('rollback')">🔄 Post-Containment Rollback</button>
+            <button class="tab-btn" onclick="switchTab('slack-chatops')">💬 Slack / Teams ChatOps</button>
+            <button class="tab-btn" onclick="switchTab('ciso-briefing')">📋 CISO Briefing</button>
+            <button class="tab-btn" onclick="switchTab('swarm-trace')">🔍 Swarm Trace</button>
         </div>
 
-        <div class="tab-content">
-            <!-- Empty State -->
-            <div id="empty-state" style="display:flex; height:100%; justify-content:center; align-items:center; flex-direction:column; color: var(--text-secondary);">
-                <div style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
-                <h2>AegisFleet Standing By</h2>
-                <p style="margin-top: 10px;">Select a threat simulation or incident from the queue to begin.</p>
-            </div>
-
-            <!-- Overview Tab -->
-            <div id="tab-overview" class="tab-pane">
-                <div class="overview-header">
-                    <div id="overview-badge" class="large-badge critical">CRITICAL</div>
-                    <div class="overview-title">
-                        <h2 id="overview-title">--</h2>
-                        <p id="overview-summary">--</p>
+        <!-- Tab 1: Overview -->
+        <div class="tab-content active" id="tab-overview">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2 id="inc-title">Select an Incident to Inspect</h2>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);" id="inc-meta">--</div>
                     </div>
+                    <div id="inc-badge"></div>
                 </div>
 
-                <div class="metrics-grid">
+                <div class="grid-4">
                     <div class="metric-card">
-                        <div class="metric-val" id="metric-resources">0</div>
-                        <div class="metric-label">Affected Resources</div>
+                        <div class="metric-value" id="val-provider">GCP</div>
+                        <div class="metric-label">Cloud Fabric</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val" id="metric-mitre">0</div>
+                        <div class="metric-value" id="val-blast">0</div>
+                        <div class="metric-label">Blast Radius</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="val-mitre">0</div>
                         <div class="metric-label">MITRE Techniques</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-val" id="metric-iocs">0</div>
-                        <div class="metric-label">IOCs Extracted</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-blast">Low</div>
-                        <div class="metric-label">Blast Radius</div>
+                        <div class="metric-value" id="val-cmds">0</div>
+                        <div class="metric-label">Staged Fixes</div>
                     </div>
                 </div>
 
-                <div class="section-title">Attack Narrative</div>
-                <div class="narrative" id="overview-narrative">
-                    --
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px;">Incident Narrative</h3>
+                    <p style="font-size: 0.85rem; line-height: 1.6; color: #cbd5e1;" id="inc-narrative">
+                        No active incident loaded. Click one of the simulation triggers in the left sidebar to start an autonomous swarm triage.
+                    </p>
                 </div>
 
-                <div class="section-title">Indicators of Compromise</div>
-                <div class="iocs-list">
-                    <ul id="overview-iocs">
-                        <!-- populated via js -->
-                    </ul>
+                <div>
+                    <h3 style="font-size: 0.9rem; margin-bottom: 8px;">Indicators of Compromise (IOCs)</h3>
+                    <div id="inc-iocs" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-amber);">--</div>
                 </div>
             </div>
+        </div>
 
-            <!-- Graph Tab -->
-            <div id="tab-graph" class="tab-pane">
-                <div class="mermaid-container" id="mermaid-view">
-                    <!-- Mermaid diagram goes here -->
-                    <div class="mermaid" id="mermaid-content"></div>
+        <!-- Tab 2: Attack Graph -->
+        <div class="tab-content" id="tab-attack-graph">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Reconstructed Multi-Cloud Attack Graph (Mermaid.js)</h3>
                 </div>
-            </div>
-
-            <!-- Briefing Tab -->
-            <div id="tab-briefing" class="tab-pane">
-                <div class="document">
-                    <div class="doc-actions">
-                        <button class="btn" onclick="copyBriefing()">Copy to Clipboard</button>
-                        <button class="btn" onclick="showToast('PDF Export started...', 'info')">Export PDF</button>
-                    </div>
-                    <div id="briefing-content">
-                        <!-- Populated via JS -->
+                <div id="mermaid-container" style="background: #0d1117; padding: 20px; border-radius: 6px; overflow-x: auto; text-align: center;">
+                    <div class="mermaid" id="mermaid-target">
+graph TD
+    A[Threat Ingress] --> B(Antigravity Swarm)
+    B --> C{Synthesizing}
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Containment Tab -->
-            <div id="tab-containment" class="tab-pane">
-                <div class="containment-actions">
-                    <div style="display:flex; align-items:center; gap: 10px;">
-                        <input type="checkbox" id="select-all-cmds" onchange="toggleAllCommands()">
-                        <label for="select-all-cmds" style="font-weight: 500;">SELECT ALL</label>
+        <!-- Tab 3: Containment (HITL) -->
+        <div class="tab-content" id="tab-containment">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Deterministic Staged Containment Actions</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Decoupled AI reasoning from mutation via Antigravity Decide Hook gates.</p>
                     </div>
-                    <button class="btn-authorize" onclick="promptAuthorization()">⚠️ Authorize Containment</button>
+                    <button class="btn-action" onclick="openHitlModal()">⚡ Authorize Immediate Containment</button>
                 </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;"></th>
-                            <th>Status</th>
-                            <th>Risk Level</th>
-                            <th>Command</th>
-                            <th>Target Resource</th>
-                        </tr>
-                    </thead>
-                    <tbody id="containment-tbody">
-                        <!-- Populated via JS -->
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Provider</th>
+                                <th>Action Type</th>
+                                <th>Command</th>
+                                <th>Pre-Computed Rollback</th>
+                            </tr>
+                        </thead>
+                        <tbody id="containment-table-body">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No staged commands for current incident.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
 
-            <!-- Trace Tab -->
-            <div id="tab-trace" class="tab-pane">
-                <div class="terminal" id="terminal-out">
-                    <!-- Traces go here -->
+        <!-- Tab 4: Rollback Engine (v2.1) -->
+        <div class="tab-content" id="tab-rollback">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>v2.1: Automated Post-Containment Rollback Engine</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary);">1-click state reversal of valid IAM bindings, service accounts, and VM snapshots upon false-positive resolution.</p>
+                    </div>
+                    <button class="btn-action btn-rollback" onclick="executeRollback()">🔄 Execute 1-Click Rollback</button>
+                </div>
+                <div id="rollback-history-view" style="font-size: 0.85rem; line-height: 1.6;">
+                    <p style="color: var(--text-secondary);">Click 'Execute 1-Click Rollback' to safely restore pre-containment state.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Slack / Teams ChatOps (v1.1) -->
+        <div class="tab-content" id="tab-slack-chatops">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>v1.1: Bidirectional Slack Block Kit & MS Teams ChatOps</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Interactive HITL approval cards with HMAC-SHA256 signature verification.</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <h4 style="font-size: 0.85rem; margin-bottom: 10px; color: #a78bfa;">Interactive Slack Block Kit Live Preview</h4>
+                        <div class="slack-card-preview" id="slack-preview-card">
+                            <div style="font-weight: 700; color: #fff; margin-bottom: 8px;" id="slack-header">🚨 AegisFleet SOC Alert</div>
+                            <div style="font-size: 0.85rem; margin-bottom: 12px;" id="slack-body">Incident summary and containment actions...</div>
+                            <div style="border-top: 1px solid #2c3136; padding-top: 12px; display: flex; gap: 8px;">
+                                <button class="slack-btn slack-btn-danger" onclick="openHitlModal()">⚡ 1-Click Authorize</button>
+                                <button class="slack-btn slack-btn-primary" onclick="executeRollback()">🔄 Rollback</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.85rem; margin-bottom: 10px; color: #38bdf8;">Block Kit JSON Payload</h4>
+                        <pre style="background: #050811; padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.75rem; overflow-y: auto; height: 320px;" id="slack-raw-json">{}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: CISO Briefing -->
+        <div class="tab-content" id="tab-ciso-briefing">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Executive CISO Briefing Dossier</h3>
+                    <button class="tech-badge" onclick="copyBriefing()">📋 Copy Briefing</button>
+                </div>
+                <div id="ciso-content" style="font-size: 0.85rem; line-height: 1.8; color: #cbd5e1; white-space: pre-wrap;">
+                    No executive briefing available.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 7: Swarm Trace -->
+        <div class="tab-content" id="tab-swarm-trace">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Real-Time Autonomous Agent Swarm Execution Trace</h3>
+                </div>
+                <div class="terminal" id="terminal-feed">
+                    <div style="color: var(--text-secondary);">[AegisFleet Swarm Engine Ready]</div>
                 </div>
             </div>
         </div>
@@ -903,365 +722,226 @@
 
     <!-- Footer -->
     <footer>
-        <div class="footer-left">
-            <div class="swarm-status">
-                SWARM STATUS: <span id="status-text">IDLE</span> <span class="status-dots">...</span>
-            </div>
-            <div class="agent-indicators">
-                <div class="agent-dot" data-agent="tier1" title="Tier1SOCLead"></div>
-                <div class="agent-dot" data-agent="audit" title="GCPAuditWorker"></div>
-                <div class="agent-dot" data-agent="asset" title="GCPAssetWorker"></div>
-                <div class="agent-dot" data-agent="iam" title="GCPIAMWorker"></div>
-            </div>
-        </div>
-        <div style="display:flex; align-items:center; gap: 15px;">
-            <span>Investigation Progress</span>
-            <div class="progress-bar-container">
-                <div class="progress-bar" id="inv-progress"></div>
-            </div>
-            <span id="inv-pct" style="font-family: var(--font-mono);">0%</span>
-        </div>
+        <div>AegisFleet SOC Responder • Google Cloud Run Native • Built for #AllThingsAgenticHackathon</div>
+        <div id="clock">--:--:-- UTC</div>
     </footer>
 </div>
 
-<!-- Overlays & Modals -->
-<div class="loading-overlay" id="loading">
-    <div class="spinner"></div>
-    <div class="loading-title">🔄 AEGISFLEET SWARM ACTIVE</div>
-    <div class="loading-text" id="loading-msg">Deploying Agents...</div>
-</div>
-
-<div class="modal-backdrop" id="auth-modal">
-    <div class="modal">
-        <h3>🔐 Human-in-the-Loop Authorization Required</h3>
-        <p>You are about to execute <strong id="cmd-count">0</strong> containment command(s). This action will modify production GCP resources.</p>
-        <label style="display:block; margin-bottom:5px; font-size:0.8rem; color:var(--text-secondary);">Authorization Token</label>
-        <input type="text" id="auth-token" value="SOC-DEMO-TKN-9942">
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeAuthModal()">Cancel</button>
-            <button class="btn-confirm" onclick="executeContainment()">CONFIRM EXECUTION</button>
+<!-- HITL Confirmation Modal -->
+<div class="modal-overlay" id="hitl-modal">
+    <div class="modal-card">
+        <h3 style="margin-bottom: 10px; color: var(--accent-red);">🔐 Human-in-the-Loop Authorization Gate</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+            You are authorizing autonomous cloud remediation. This will execute staged CLI commands to isolate identities or resources.
+        </p>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 0.75rem; color: var(--text-secondary);">Analyst Authorization Token:</label>
+            <input type="text" id="auth-token" value="SOC-ANALYST-AUTH-TOKEN-2026" style="width: 100%; background: #050811; border: 1px solid var(--surface-border); padding: 8px; color: #fff; border-radius: 4px; font-family: var(--font-mono); margin-top: 4px;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button style="background: transparent; border: 1px solid var(--surface-border); color: #fff; padding: 8px 14px; border-radius: 4px; cursor: pointer;" onclick="closeHitlModal()">Cancel</button>
+            <button class="btn-action" onclick="confirmHitlExecution()">Confirm & Execute</button>
         </div>
     </div>
 </div>
 
-<div class="toast-container" id="toasts"></div>
-
-<!-- Scripts -->
-<script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    
-    // Configure Mermaid for Dark Mode
-    mermaid.initialize({
-        startOnLoad: false,
-        theme: 'dark',
-        themeVariables: {
-            primaryColor: '#111827',
-            primaryTextColor: '#e2e8f0',
-            primaryBorderColor: '#3b82f6',
-            lineColor: '#94a3b8',
-            secondaryColor: '#1e293b',
-            tertiaryColor: '#0a0e17'
-        }
-    });
-    window.mermaidAPI = mermaid;
-</script>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="font-size: 1.1rem; font-weight: 600; color: #fff;" id="loading-text">Deploying Antigravity Swarm...</div>
+    <div style="font-size: 0.8rem; color: var(--text-secondary);">Correlating Multi-Cloud Telemetry & Generating Attack Graph</div>
+</div>
 
 <script>
-    // --- Clock ---
-    setInterval(() => {
-        const now = new Date();
-        document.getElementById('utc-clock').innerText = now.toISOString().substring(11, 19) + ' UTC';
-    }, 1000);
+let currentIncident = null;
+let incidents = [];
 
-    // --- State ---
-    let currentIncident = null;
-    let traceInterval = null;
+// Clock
+setInterval(() => {
+    document.getElementById('clock').innerText = new Date().toUTCString().slice(17, 25) + ' UTC';
+}, 1000);
 
-    // --- Mock Data for Demo ---
-    const mockResponses = {
-        compromised_key: {
-            id: "INC-2026-" + Math.floor(Math.random()*10000),
-            severity: "CRITICAL",
-            title: "Compromised SA Key Detected",
-            timestamp: new Date().toISOString(),
-            summary: "Service account key 'github-actions-sa' found in public repository and used from anomalous IP.",
-            metrics: { resources: 3, mitre: 4, iocs: 7, blast: "High" },
-            narrative: "At 14:32 UTC, a GitGuardian webhook fired alerting of a GCP SA key leak. Within 3 minutes, AegisFleet detected CloudTrail logs showing the 'github-actions-sa' key being used from an unknown ASN in Russia (IP: 45.33.22.11) to enumerate Storage Buckets. The threat actor attempted to download 'gs://finance-db-backups-prod'.",
-            iocs: [
-                { type: "IP", val: "45.33.22.11" },
-                { type: "SA", val: "github-actions-sa@prod-env.iam.gserviceaccount.com" },
-                { type: "Bucket", val: "gs://finance-db-backups-prod" }
-            ],
-            graph: `graph TD
-    A[Public GitHub Repo] -->|Leaked Key| B(github-actions-sa)
-    C[IP: 45.33.22.11] -->|Authenticates| B
-    B -->|Storage Object Viewer| D[(gs://finance-db-backups-prod)]
-    B -->|Compute Viewer| E[Compute Engine API]
-    style B fill:#ef4444,stroke:#333,stroke-width:2px
-    style C fill:#f59e0b,stroke:#333,stroke-width:2px`,
-            briefing: `<h1>Executive Summary</h1>
-<p>A critical security incident involving a leaked Service Account key has been identified and verified by the AegisFleet Swarm.</p>
-<h2>Timeline & Impact</h2>
-<ul>
-<li><strong>T0:</strong> Key committed to public repository.</li>
-<li><strong>T+3m:</strong> Unauthorized access detected from external IP.</li>
-<li><strong>Impact:</strong> Actor enumerated resources. Containment required to prevent data exfiltration.</li>
-</ul>
-<h2>Recommended Action</h2>
-<p>Immediate revocation of the SA key and IP block required.</p>`,
-            commands: [
-                { id: "cmd1", status: "PENDING", risk: "LOW", cmd: "gcloud iam service-accounts keys delete 1a2b3c4d --iam-account=github-actions-sa@...", target: "SA Key" },
-                { id: "cmd2", status: "PENDING", risk: "MEDIUM", cmd: "gcloud compute security-policies rules create 1000 --action=deny --src-ip-ranges=45.33.22.11", target: "Cloud Armor" }
-            ],
-            traces: [
-                { agent: "tier1", msg: "Received threat signal: Public key leak alert." },
-                { agent: "tier1", msg: "Spawning GCPAuditWorker to review recent API calls..." },
-                { agent: "audit", msg: "Querying Cloud Logging for principal 'github-actions-sa'..." },
-                { agent: "audit", msg: "Found 14 anomalouos calls from IP 45.33.22.11." },
-                { agent: "tier1", msg: "Spawning GCPAssetWorker to determine blast radius..." },
-                { agent: "asset", msg: "SA has roles: Storage Object Viewer, Compute Viewer." },
-                { agent: "tier1", msg: "Correlating findings. Generating containment strategy." },
-                { agent: "iam", msg: "Drafted key revocation command." }
-            ]
-        }
-    };
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
 
-    // --- UI Functions ---
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-        
-        event.currentTarget.classList.add('active');
-        document.getElementById('tab-' + tabId).classList.add('active');
-
-        if(tabId === 'graph' && currentIncident) {
-            renderMermaid(currentIncident.graph);
-        }
+    if (tabId === 'attack-graph' && currentIncident && currentIncident.mermaid_diagram) {
+        renderMermaid(currentIncident.mermaid_diagram);
     }
+}
 
-    function showToast(msg, type='info') {
-        const container = document.getElementById('toasts');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerText = msg;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
-    }
-
-    // --- Loading Animation ---
-    const loadingMsgs = [
-        "Deploying GCPAuditWorker...",
-        "Deploying GCPAssetWorker...",
-        "Deploying GCPIAMWorker...",
-        "Correlating threat signals...",
-        "Generating attack graph...",
-        "Preparing CISO briefing..."
-    ];
-
-    async function showLoadingSeq() {
-        document.getElementById('loading').classList.add('active');
-        document.getElementById('status-text').innerText = "INVESTIGATING";
-        document.querySelectorAll('.agent-dot').forEach(d => d.classList.add('active'));
-        
-        const msgEl = document.getElementById('loading-msg');
-        const bar = document.getElementById('inv-progress');
-        const pct = document.getElementById('inv-pct');
-        
-        for(let i=0; i<loadingMsgs.length; i++) {
-            msgEl.innerText = loadingMsgs[i];
-            let progress = Math.round(((i+1)/loadingMsgs.length)*100);
-            bar.style.width = progress + '%';
-            pct.innerText = progress + '%';
-            await new Promise(r => setTimeout(r, 600)); // Dramatic pause
-        }
-    }
-
-    function hideLoading() {
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('status-text').innerText = "CONTAINMENT_READY";
-        document.querySelectorAll('.agent-dot').forEach(d => d.classList.remove('active'));
-    }
-
-    // --- Simulation / API ---
-    async function triggerSimulation(type) {
-        // Hide empty state, reset tabs
-        document.getElementById('empty-state').style.display = 'none';
-        
-        await showLoadingSeq();
-
-        // Simulate API call (Fallback to mock for demo)
-        try {
-            // let res = await fetch('/api/simulate/' + type, { method: 'POST' });
-            // let data = await res.json();
-            throw new Error("Simulating API response using mock data");
-        } catch (e) {
-            console.log("Using local mock data for:", type);
-            currentIncident = mockResponses[type] || mockResponses['compromised_key'];
-        }
-
-        renderIncident(currentIncident);
+async function runScenario(scenarioKey) {
+    showLoading("Deploying Antigravity Swarm...");
+    try {
+        const res = await fetch(`/api/simulate/${scenarioKey}`, { method: 'POST' });
+        const report = await res.json();
+        currentIncident = report;
+        incidents.unshift(report);
+        updateUI(report);
+        renderQueue();
+    } catch (err) {
+        alert("Simulation error: " + err);
+    } finally {
         hideLoading();
-        showToast("Swarm investigation complete. Review findings.", "success");
-        
-        // Ensure Overview is shown
-        document.querySelector('.tab-btn').click();
     }
+}
 
-    function renderIncident(data) {
-        // Overview
-        const badge = document.getElementById('overview-badge');
-        badge.className = `large-badge ${data.severity.toLowerCase()}`;
-        badge.innerText = data.severity;
-        
-        document.getElementById('overview-title').innerText = data.title;
-        document.getElementById('overview-summary').innerText = data.summary;
-        
-        document.getElementById('metric-resources').innerText = data.metrics.resources;
-        document.getElementById('metric-mitre').innerText = data.metrics.mitre;
-        document.getElementById('metric-iocs').innerText = data.metrics.iocs;
-        document.getElementById('metric-blast').innerText = data.metrics.blast;
-        
-        document.getElementById('overview-narrative').innerText = data.narrative;
-        
-        const iocsList = document.getElementById('overview-iocs');
-        iocsList.innerHTML = data.iocs.map(ioc => 
-            `<li><span class="ioc-type">[${ioc.type}]</span> <span class="ioc-val">${ioc.val}</span></li>`
-        ).join('');
+function updateUI(report) {
+    document.getElementById('inc-title').innerText = report.title;
+    document.getElementById('inc-meta').innerText = `${report.incident_id} • ${report.provider} • ${report.investigation_timestamp}`;
+    document.getElementById('val-provider').innerText = report.provider;
+    document.getElementById('val-blast').innerText = (report.blast_radius || []).length;
+    document.getElementById('val-mitre').innerText = (report.mitre_techniques || []).length;
+    document.getElementById('val-cmds').innerText = (report.staged_gcloud_commands || []).length;
+    document.getElementById('inc-narrative').innerText = report.attack_narrative || report.summary;
+    document.getElementById('inc-iocs').innerText = (report.iocs || []).join('\n') || 'None recorded';
+    document.getElementById('ciso-content').innerText = report.ciso_briefing || 'No briefing available.';
 
-        // Briefing
-        document.getElementById('briefing-content').innerHTML = data.briefing;
+    // Containment table
+    const tbody = document.getElementById('containment-table-body');
+    tbody.innerHTML = '';
+    (report.staged_gcloud_commands || []).forEach(cmd => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><span class="badge ${cmd.status === 'EXECUTED' ? 'badge-gcp' : 'badge-multi'}">${cmd.status}</span></td>
+            <td><code>${cmd.provider || 'GCP'}</code></td>
+            <td>${cmd.action_type}</td>
+            <td><code>${cmd.command}</code></td>
+            <td><code style="color: var(--accent-cyan);">${cmd.rollback_command || '--'}</code></td>
+        `;
+        tbody.appendChild(tr);
+    });
 
-        // Containment
-        const tbody = document.getElementById('containment-tbody');
-        tbody.innerHTML = data.commands.map((cmd, i) => `
-            <tr>
-                <td><input type="checkbox" class="cmd-checkbox" value="${cmd.id}"></td>
-                <td><span class="badge ${cmd.status === 'PENDING' ? 'high' : 'low'}" id="status-${cmd.id}">${cmd.status}</span></td>
-                <td><span class="badge ${cmd.risk === 'HIGH' ? 'critical' : (cmd.risk === 'MEDIUM' ? 'high' : 'medium')}">${cmd.risk}</span></td>
-                <td class="cmd-cell">${cmd.cmd}</td>
-                <td>${cmd.target}</td>
-            </tr>
-        `).join('');
-        document.getElementById('select-all-cmds').checked = false;
+    // Terminal trace
+    const term = document.getElementById('terminal-feed');
+    term.innerHTML = '';
+    (report.swarm_trace || []).forEach(trace => {
+        const div = document.createElement('div');
+        if (trace.includes('Lead')) div.className = 'trace-lead';
+        else if (trace.includes('Audit')) div.className = 'trace-audit';
+        else if (trace.includes('Asset')) div.className = 'trace-asset';
+        else if (trace.includes('IAM')) div.className = 'trace-iam';
+        else if (trace.includes('AWS')) div.className = 'trace-aws';
+        else div.className = 'trace-azure';
+        div.innerText = trace;
+        term.appendChild(div);
+    });
 
-        // Traces (animate)
-        const term = document.getElementById('terminal-out');
-        term.innerHTML = '';
-        if(traceInterval) clearInterval(traceInterval);
-        
-        let traceIdx = 0;
-        traceInterval = setInterval(() => {
-            if(traceIdx >= data.traces.length) {
-                clearInterval(traceInterval);
-                return;
-            }
-            const t = data.traces[traceIdx];
-            const time = new Date().toISOString().substring(11,19);
-            const div = document.createElement('div');
-            div.className = 'trace-line';
-            div.innerHTML = `<span class="trace-time">[${time}]</span><span class="trace-agent ${t.agent}">[${t.agent.toUpperCase()}]</span> <span class="trace-msg">${t.msg}</span>`;
-            term.appendChild(div);
-            term.scrollTop = term.scrollHeight;
-            traceIdx++;
-        }, 300);
-
-        // Add to queue sidebar
-        const q = document.getElementById('incident-queue');
-        if(q.innerText.includes('No active')) q.innerHTML = '';
-        q.innerHTML = `
-            <div class="incident-card" style="border-color: var(--accent-red)">
-                <div class="incident-header">
-                    <span class="badge critical">${data.severity}</span>
-                    <span class="incident-id">${data.id}</span>
-                </div>
-                <div class="incident-title">${data.title}</div>
-                <div class="incident-time">Just now</div>
-            </div>
-        ` + q.innerHTML;
-    }
-
-    async function renderMermaid(graphStr) {
-        try {
-            const el = document.getElementById('mermaid-content');
-            el.removeAttribute('data-processed');
-            el.innerHTML = graphStr;
-            if(window.mermaidAPI) {
-                await window.mermaidAPI.run({
-                    nodes: [el]
-                });
-            }
-        } catch (e) {
-            console.error("Mermaid render failed", e);
-        }
-    }
-
-    // --- Containment Logic ---
-    function toggleAllCommands() {
-        const checked = document.getElementById('select-all-cmds').checked;
-        document.querySelectorAll('.cmd-checkbox').forEach(cb => cb.checked = checked);
-    }
-
-    function promptAuthorization() {
-        const selected = document.querySelectorAll('.cmd-checkbox:checked');
-        if(selected.length === 0) {
-            showToast("Please select at least one command to execute.", "warning");
-            return;
-        }
-        document.getElementById('cmd-count').innerText = selected.length;
-        document.getElementById('auth-modal').classList.add('active');
-    }
-
-    function closeAuthModal() {
-        document.getElementById('auth-modal').classList.remove('active');
-    }
-
-    function executeContainment() {
-        const token = document.getElementById('auth-token').value;
-        if(!token) {
-            showToast("Authorization token required.", "error");
-            return;
-        }
-
-        closeAuthModal();
-        showToast("Executing containment commands...", "info");
-        
-        document.getElementById('status-text').innerText = "REMEDIATING";
-        document.querySelector('.agent-dot[data-agent="tier1"]').classList.add('active');
-
-        // Simulate execution delay
-        setTimeout(() => {
-            document.querySelectorAll('.cmd-checkbox:checked').forEach(cb => {
-                const badge = document.getElementById('status-' + cb.value);
-                badge.className = 'badge low';
-                badge.innerHTML = '✓ EXECUTED';
-                cb.checked = false;
-                cb.disabled = true;
-            });
-            document.getElementById('select-all-cmds').checked = false;
-            
-            showToast("Containment successful. Threat neutralized.", "success");
-            document.getElementById('status-text').innerText = "RESOLVED";
-            document.querySelector('.agent-dot[data-agent="tier1"]').classList.remove('active');
-            
-            // Log to terminal
-            const term = document.getElementById('terminal-out');
-            const time = new Date().toISOString().substring(11,19);
-            const div = document.createElement('div');
-            div.className = 'trace-line';
-            div.innerHTML = `<span class="trace-time">[${time}]</span><span class="trace-agent tier1">[SYSTEM]</span> <span class="trace-msg" style="color:var(--accent-green)">Containment commands successfully executed via HITL approval.</span>`;
-            term.appendChild(div);
-            term.scrollTop = term.scrollHeight;
-
-        }, 1500);
-    }
-
-    function copyBriefing() {
-        const text = document.getElementById('briefing-content').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            showToast("Briefing copied to clipboard", "success");
+    // Slack Preview
+    document.getElementById('slack-header').innerText = `🚨 AegisFleet Alert: [${report.threat_severity}] ${report.incident_id}`;
+    document.getElementById('slack-body').innerText = `${report.title}\n\n${report.summary}`;
+    fetch(`/api/integrations/slack/preview/${report.incident_id}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('slack-raw-json').innerText = JSON.stringify(data, null, 2);
         });
-    }
 
+    // Mermaid
+    if (report.mermaid_diagram) {
+        renderMermaid(report.mermaid_diagram);
+    }
+}
+
+async function renderMermaid(graphDef) {
+    const target = document.getElementById('mermaid-target');
+    if (window.mermaid && graphDef) {
+        try {
+            const { svg } = await window.mermaid.render('mermaid-svg-' + Date.now(), graphDef);
+            target.innerHTML = svg;
+        } catch (e) {
+            target.innerText = graphDef;
+        }
+    }
+}
+
+function renderQueue() {
+    const list = document.getElementById('incident-list');
+    list.innerHTML = '';
+    document.getElementById('queue-count').innerText = incidents.length;
+    incidents.forEach(inc => {
+        const card = document.createElement('div');
+        card.className = 'incident-card' + (currentIncident && currentIncident.incident_id === inc.incident_id ? ' active' : '');
+        card.onclick = () => { currentIncident = inc; updateUI(inc); renderQueue(); };
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px;">
+                <span>${inc.incident_id}</span>
+                <span class="badge ${inc.provider === 'MULTI_CLOUD' ? 'badge-multi' : 'badge-gcp'}">${inc.provider}</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${inc.title}
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function openHitlModal() { document.getElementById('hitl-modal').style.display = 'flex'; }
+function closeHitlModal() { document.getElementById('hitl-modal').style.display = 'none'; }
+
+async function confirmHitlExecution() {
+    if (!currentIncident) return;
+    const token = document.getElementById('auth-token').value;
+    const cmdIds = (currentIncident.staged_gcloud_commands || []).map(c => c.command_id);
+    
+    showLoading("Executing Authorized Containment...");
+    try {
+        const res = await fetch('/api/containment/authorize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ incident_id: currentIncident.incident_id, command_ids: cmdIds, authorization_token: token })
+        });
+        const data = await res.json();
+        closeHitlModal();
+        alert(`Containment execution completed. Approved: ${data.approved_commands ? data.approved_commands.length : 0}`);
+        runScenario('compromised_key'); // refresh
+    } catch (e) {
+        alert("Containment error: " + e);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function executeRollback() {
+    if (!currentIncident) { alert("No incident selected."); return; }
+    showLoading("Reverting Containment Mutations...");
+    try {
+        const res = await fetch('/api/containment/rollback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ incident_id: currentIncident.incident_id, reason: "1-Click UI Rollback Trigger" })
+        });
+        const data = await res.json();
+        document.getElementById('rollback-history-view').innerHTML = `
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); padding: 15px; border-radius: 6px;">
+                <h4 style="color: var(--accent-green); margin-bottom: 6px;">✅ Rollback Succeeded: Status ${data.status}</h4>
+                <p style="font-size: 0.8rem; color: #cbd5e1;">Reverted commands: ${data.rolled_back_commands ? data.rolled_back_commands.join(', ') : 'None'}</p>
+                <div style="font-family: var(--font-mono); font-size: 0.75rem; margin-top: 10px;">
+                    ${(data.results || []).map(r => `<div>[SUCCESS] ${r.rollback_command}</div>`).join('')}
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        alert("Rollback error: " + e);
+    } finally {
+        hideLoading();
+    }
+}
+
+function showLoading(msg) {
+    document.getElementById('loading-text').innerText = msg;
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+function copyBriefing() {
+    navigator.clipboard.writeText(document.getElementById('ciso-content').innerText);
+    alert("CISO Briefing copied to clipboard.");
+}
+
+// Initial load
+window.onload = () => { runScenario('compromised_key'); };
 </script>
 
 </body>
