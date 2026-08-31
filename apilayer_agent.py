@@ -44,7 +44,7 @@ class APILayerSettings(BaseSettings):
     gemini_api_key: str = Field(
         default_factory=lambda: os.getenv("GEMINI_API_KEY", "")
     )
-    gemini_model: str = Field(default="gemini-2.5-flash")
+    gemini_model: str = Field(default="gemini-3.6-flash")
     http_timeout_seconds: float = Field(default=15.0)
 
 

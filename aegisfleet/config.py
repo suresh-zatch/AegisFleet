@@ -85,12 +85,12 @@ class AegisFleetConfig(BaseSettings):
         description="Google Gemini API key",
     )
     gemini_model: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.6-flash",
         validation_alias=AliasChoices("AEGISFLEET_GEMINI_MODEL", "GEMINI_MODEL"),
         description="Gemini model identifier for standard agent tasks",
     )
     gemini_thinking_model: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.6-flash",
         validation_alias=AliasChoices(
             "AEGISFLEET_GEMINI_THINKING_MODEL", "GEMINI_THINKING_MODEL"
         ),
